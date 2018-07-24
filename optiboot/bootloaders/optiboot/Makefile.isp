@@ -14,16 +14,11 @@
 # make lilypad_isp
 # make ng_isp
 # etc...
-#
+
 #
 # Note: inherit paths/etc from parent Makefile.
 #
-#---------------------------------------------------------------------------
-# 
-# * Copyright 2013-2015 by Bill Westfield.  Part of Optiboot.
-# * This software is licensed under version 2 of the Gnu Public Licence.
-# * See optiboot.c for details.
-# 
+
 #---------------------------------------------------------------------------
 
 # enter the parameters for the avrdude isp tool  -b19200
@@ -35,15 +30,15 @@ AVRDUDE_CONF ?= -C$(TOOLROOT)/avr/etc/avrdude.conf
 
 # These are the parameters for a usb-based STK500v2 programmer.
 # Exact type unknown.  (historical Makefile values.)
-#ISPTOOL	   = stk500v2
-#ISPPORT	   =  usb
-#ISPSPEED   = -b 115200
+#ISPTOOL  = stk500v2
+#ISPPORT  =  usb
+#ISPSPEED = -b 115200
 #
 #
 # These are parameters for using an Arduino with the ArduinoISP sketch
 #  as the programmer.  On a mac, for a particular Uno as programmer.
-ISPTOOL	?= stk500v1
-ISPPORT	?= /dev/tty.usbserial-FTD61T6Q
+ISPTOOL  ?= stk500v1
+ISPPORT  ?= /dev/tty.usbmodemfd3141
 ISPSPEED ?= -b19200
 
 
@@ -58,7 +53,7 @@ endif
 # avrdude commands to erase chip, unlock memory, and program fuses.
 #
 ISPFUSES =	-e -u -U lock:w:0x3f:m $(EFUSE_CMD) \
-	 	-U hfuse:w:0x$(HFUSE):m -U lfuse:w:0x$(LFUSE):m
+		-U hfuse:w:0x$(HFUSE):m -U lfuse:w:0x$(LFUSE):m
 
 
 #
@@ -83,8 +78,10 @@ ISPFLASH =	-U flash:w:$(PROGRAM)_$(TARGET).hex -U lock:w:0x2f:m
 # lock it), but since the high two bits of the lock byte are
 # unused, avrdude would get confused.
 
+
+AVRDUDE_CMD =	$(AVRDUDE_ROOT)avrdude $(AVRDUDE_CONF) -c $(ISPTOOL) \
+		-p $(MCU_TARGET) -P $(ISPPORT) $(ISPSPEED)
+
 isp: $(PROGRAM)_$(TARGET).hex
-	$(AVRDUDE_ROOT)avrdude $(AVRDUDE_CONF) -c $(ISPTOOL) \
-              -p $(MCU_TARGET) -P $(ISPPORT) $(ISPSPEED) \
-	$(ISPFUSES) \
-	$(ISPFLASH)
+	$(AVRDUDE_CMD) $(ISPFUSES)
+	$(AVRDUDE_CMD) $(ISPFLASH)
